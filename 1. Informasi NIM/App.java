@@ -28,7 +28,7 @@ public class App {
         } else if (prefix.equals("32S")) {
             namaProdi = "Sarjana Bioteknologi";
         } else if (prefix.equals("114")) {
-            namaProdi = "Diploma 4 Teknologi Rekasaya Perangkat Lunak";
+            namaProdi = "Diploma 4 Teknologi Rekayasa Perangkat Lunak";
         } else if (prefix.equals("113")) {
             namaProdi = "Diploma 3 Teknologi Informasi";
         } else if (prefix.equals("133")) {
@@ -42,7 +42,7 @@ public class App {
         int angkatan = Integer.parseInt("20" + angkatanString);
         int urutan = Integer.parseInt(nim.substring(5, 8));
 
-        System.out.println("Inforamsi NIM " + nim + ": ");
+        System.out.println("Informasi NIM " + nim + ": ");
         System.out.println(">> Program Studi: " + namaProdi);
         System.out.println(">> Angkatan: " + angkatan);
         System.out.println(">> Urutan: " + urutan);
