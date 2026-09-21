@@ -1,57 +1,76 @@
 import java.util.Scanner;
 
 public class App {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        int n = sc.nextInt();
-        long[][] m = new long[n][n];
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++)
-                m[i][j] = sc.nextLong();
+    private static final String TIDAK_ADA = "Tidak Ada";
 
-        if (n == 1) {
-            System.out.println("Nilai L: Tidak Ada");
-            System.out.println("Nilai Kebalikan L: Tidak Ada");
-            System.out.println("Nilai Tengah: " + m[0][0]);
-            System.out.println("Perbedaan: Tidak Ada");
-            System.out.println("Dominan: " + m[0][0]);
-            return;
-        }
+    // null bila ukuran bukan bilangan bulat positif atau elemennya kurang / bukan bilangan bulat.
+    private static long[][] bacaMatriks(Scanner scanner) {
+        if (!scanner.hasNextInt()) return null;
+        int n = scanner.nextInt();
+        if (n < 1) return null;
 
-        long tengah;
-        if (n % 2 == 1) {
-            tengah = m[n / 2][n / 2];
-        } else {
-            int a = n / 2 - 1, b = n / 2;
-            tengah = m[a][a] + m[a][b] + m[b][a] + m[b][b];
-        }
-
-        if (n == 2) {
-            System.out.println("Nilai L: Tidak Ada");
-            System.out.println("Nilai Kebalikan L: Tidak Ada");
-            System.out.println("Nilai Tengah: " + tengah);
-            System.out.println("Perbedaan: Tidak Ada");
-            System.out.println("Dominan: " + tengah);
-            return;
-        }
-
-        long nilaiL = 0, kebalikanL = 0;
+        long[][] matriks = new long[n][n];
         for (int i = 0; i < n; i++) {
-            nilaiL += m[i][0];   
-            kebalikanL += m[i][n - 1]; 
+            for (int j = 0; j < n; j++) {
+                if (!scanner.hasNextLong()) return null;
+                matriks[i][j] = scanner.nextLong();
+            }
         }
-        for (int j = 1; j < n - 1; j++) {
-            nilaiL += m[n - 1][j];
-            kebalikanL += m[0][j];
-        }
+        return matriks;
+    }
 
-        long perbedaan = Math.abs(nilaiL - kebalikanL);
-        long dominan = (perbedaan == 0) ? tengah : Math.max(nilaiL, kebalikanL);
+    // Ganjil: sel tengah. Genap: jumlah empat sel di tengah.
+    private static long nilaiTengah(long[][] m) {
+        int n = m.length;
+        if (n % 2 == 1) return m[n / 2][n / 2];
+        int a = n / 2 - 1;
+        int b = n / 2;
+        return m[a][a] + m[a][b] + m[b][a] + m[b][b];
+    }
 
-        System.out.println("Nilai L: " + nilaiL);
+    // Kolom pertama ditambah baris terakhir tanpa sudut kiri-bawah yang sudah terhitung.
+    private static long nilaiL(long[][] m) {
+        int n = m.length;
+        long jumlah = 0;
+        for (int i = 0; i < n; i++) jumlah += m[i][0];
+        for (int j = 1; j < n - 1; j++) jumlah += m[n - 1][j];
+        return jumlah;
+    }
+
+    // Kolom terakhir ditambah baris pertama tanpa sudut kanan-atas yang sudah terhitung.
+    private static long nilaiKebalikanL(long[][] m) {
+        int n = m.length;
+        long jumlah = 0;
+        for (int i = 0; i < n; i++) jumlah += m[i][n - 1];
+        for (int j = 1; j < n - 1; j++) jumlah += m[0][j];
+        return jumlah;
+    }
+
+    private static void cetak(String l, String kebalikanL, long tengah, String perbedaan, long dominan) {
+        System.out.println("Nilai L: " + l);
         System.out.println("Nilai Kebalikan L: " + kebalikanL);
         System.out.println("Nilai Tengah: " + tengah);
         System.out.println("Perbedaan: " + perbedaan);
         System.out.println("Dominan: " + dominan);
+    }
+
+    public static void main(String[] args) {
+        long[][] matriks = bacaMatriks(new Scanner(System.in));
+        if (matriks == null) {
+            System.out.println("Input matriks tidak valid");
+            return;
+        }
+
+        long tengah = nilaiTengah(matriks);
+        if (matriks.length <= 2) {
+            cetak(TIDAK_ADA, TIDAK_ADA, tengah, TIDAK_ADA, tengah);
+            return;
+        }
+
+        long l = nilaiL(matriks);
+        long kebalikanL = nilaiKebalikanL(matriks);
+        long perbedaan = Math.abs(l - kebalikanL);
+        long dominan = perbedaan == 0 ? tengah : Math.max(l, kebalikanL);
+        cetak(String.valueOf(l), String.valueOf(kebalikanL), tengah, String.valueOf(perbedaan), dominan);
     }
 }

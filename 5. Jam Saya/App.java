@@ -1,72 +1,60 @@
+import java.util.Locale;
 import java.util.Scanner;
 
-public class App
- {
-    static boolean semuaDigit(String s) {
-        if (s.isEmpty()) return false;
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c < '0' || c > '9') return false;
-        }
-        return true;
+public class App {
+    private static final long MENIT_PER_HARI = 24 * 60;
+
+    // Total menit sejak 00:00, atau -1 bila bukan "J:M" / "JJ:MM" yang valid (8:30 diterima sesuai modul).
+    static int parseJam(String teks) {
+        if (!teks.matches("\\d{1,2}:\\d{1,2}")) return -1;
+        String[] bagian = teks.split(":");
+        int jam = Integer.parseInt(bagian[0]);
+        int menit = Integer.parseInt(bagian[1]);
+        return (jam > 23 || menit > 59) ? -1 : jam * 60 + menit;
     }
 
-    // return total menit, atau -1 kalau tidak valid
-    static int parseJam(String s) {
-        String[] p = s.split(":", -1);
-        if (p.length != 2) return -1;
-        int h, m;
+    // Selisih menit dari perintah "+N" atau "-N", atau null bila format salah.
+    static Long parsePerintah(String perintah) {
+        if (!perintah.matches("[+-]\\d+")) return null;
         try {
-            h = Integer.parseInt(p[0].trim());
-            m = Integer.parseInt(p[1].trim());
+            long menit = Long.parseLong(perintah.substring(1));
+            return perintah.charAt(0) == '-' ? -menit : menit;
         } catch (NumberFormatException e) {
-            return -1;
+            return null; // lebih besar dari jangkauan long
         }
-        if (h < 0 || h > 23 || m < 0 || m > 59) return -1;
-        return h * 60 + m;
     }
 
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        if (!sc.hasNextLine()) {
-            System.out.println("Jam tidak valid");
-            return;
-        }
-        int mulai = parseJam(sc.nextLine().trim());
-        if (mulai < 0) {
+        Scanner scanner = new Scanner(System.in);
+        int jamAwal = scanner.hasNextLine() ? parseJam(scanner.nextLine().trim()) : -1;
+        if (jamAwal < 0) {
             System.out.println("Jam tidak valid");
             return;
         }
 
-        long cur = mulai, total = 0, hari = 0;
+        long posisi = jamAwal;
+        long totalMenit = 0;
+        long pergantianHari = 0;
 
-        while (sc.hasNextLine()) {
-            String cmd = sc.nextLine().trim();
-            if (cmd.equals("---")) break;
+        while (scanner.hasNextLine()) {
+            String baris = scanner.nextLine().trim();
+            if (baris.equals("---")) break;
 
-            char tanda = cmd.isEmpty() ? ' ' : cmd.charAt(0);
-            if ((tanda != '+' && tanda != '-') || !semuaDigit(cmd.substring(1))) {
+            Long selisih = parsePerintah(baris);
+            if (selisih == null) {
                 System.out.println("Perintah tidak valid");
                 continue;
             }
-            long d;
-            try {
-                d = Long.parseLong(cmd.substring(1));
-            } catch (NumberFormatException e) {
-                System.out.println("Perintah tidak valid");
-                continue;
-            }
-            if (tanda == '-') d = -d;
 
-            total += d;
-            cur += d;
-            hari += Math.abs(Math.floorDiv(cur, 1440L)); // jumlah lintas batas 24 jam
-            cur = Math.floorMod(cur, 1440L);             // normalisasi 0..1439
+            totalMenit += selisih;
+            posisi += selisih;
+            pergantianHari += Math.abs(Math.floorDiv(posisi, MENIT_PER_HARI));
+            posisi = Math.floorMod(posisi, MENIT_PER_HARI);
         }
 
-        System.out.println(String.format("Jam Awal: %02d:%02d", mulai / 60, mulai % 60));
-        System.out.println(String.format("Jam Akhir: %02d:%02d", cur / 60, cur % 60));
-        System.out.println("Total Menit: " + (total > 0 ? "+" + total : String.valueOf(total)));
-        System.out.println("Pergantian Hari: " + hari);
+        System.out.printf(Locale.US, "Jam Awal: %02d:%02d%n", jamAwal / 60, jamAwal % 60);
+        System.out.printf(Locale.US, "Jam Akhir: %02d:%02d%n", posisi / 60, posisi % 60);
+        System.out.println("Total Menit: " + (totalMenit > 0 ? "+" + totalMenit : String.valueOf(totalMenit)));
+        System.out.println("Pergantian Hari: " + pergantianHari);
     }
 }

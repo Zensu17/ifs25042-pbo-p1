@@ -1,51 +1,58 @@
 import java.util.Scanner;
 
 public class App {
+    private static final int PANJANG_NIM = 8;
+
+    private static String namaProdi(String kode) {
+        switch (kode) {
+            case "11S": return "Sarjana Informatika";
+            case "12S": return "Sarjana Sistem Informasi";
+            case "13S": return "Sarjana Teknik Elektro";
+            case "21S": return "Sarjana Manajemen Rekayasa";
+            case "22S": return "Sarjana Teknik Metalurgi";
+            case "31S": return "Sarjana Teknik Bioproses";
+            case "32S": return "Sarjana Bioteknologi";
+            case "114": return "Diploma 4 Teknologi Rekayasa Perangkat Lunak";
+            case "113": return "Diploma 3 Teknologi Informasi";
+            case "133": return "Diploma 3 Teknologi Komputer";
+            default: return null;
+        }
+    }
+
+    private static boolean semuaDigit(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c < '0' || c > '9') return false;
+        }
+        return !s.isEmpty();
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        String nim = scanner.nextLine();
+        String nim = scanner.hasNextLine() ? scanner.nextLine() : "";
 
-        if (nim.length() != 8) {
+        if (nim.length() != PANJANG_NIM) {
             System.out.println("NIM harus 8 karakter");
             return;
         }
 
-        String prefix = nim.substring(0, 3);
-        String namaProdi = "";
-
-        if (prefix.equals("11S")) {
-            namaProdi = "Sarjana Informatika";
-        } else if (prefix.equals("12S")) {
-            namaProdi = "Sarjana Sistem Informasi";
-        } else if (prefix.equals("13S")) {
-            namaProdi = "Sarjana Teknik Elektro";
-        } else if (prefix.equals("21S")) {
-            namaProdi = "Sarjana Manajemen Rekayasa";
-        } else if (prefix.equals("22S")) {
-            namaProdi = "Sarjana Teknik Metalurgi";
-        } else if (prefix.equals("31S")) {
-            namaProdi = "Sarjana Teknik Bioproses";
-        } else if (prefix.equals("32S")) {
-            namaProdi = "Sarjana Bioteknologi";
-        } else if (prefix.equals("114")) {
-            namaProdi = "Diploma 4 Teknologi Rekayasa Perangkat Lunak";
-        } else if (prefix.equals("113")) {
-            namaProdi = "Diploma 3 Teknologi Informasi";
-        } else if (prefix.equals("133")) {
-            namaProdi = "Diploma 3 Teknologi Komputer";
-        } else {
+        String namaProdi = namaProdi(nim.substring(0, 3));
+        if (namaProdi == null) {
             System.out.println("Kode tidak tersedia");
             return;
         }
 
-        String angkatanString = nim.substring(3, 5);
-        int angkatan = Integer.parseInt("20" + angkatanString);
-        int urutan = Integer.parseInt(nim.substring(5, 8));
+        String angkatan = nim.substring(3, 5);
+        String urutan = nim.substring(5, 8);
+        if (!semuaDigit(angkatan) || !semuaDigit(urutan)) {
+            System.out.println("Angkatan dan urutan NIM harus berupa angka");
+            return;
+        }
+
 
         System.out.println("Informasi NIM " + nim + ": ");
         System.out.println(">> Program Studi: " + namaProdi);
-        System.out.println(">> Angkatan: " + angkatan);
-        System.out.println(">> Urutan: " + urutan);
-
+        System.out.println(">> Angkatan: " + Integer.parseInt("20" + angkatan));
+        System.out.println(">> Urutan: " + Integer.parseInt(urutan));
     }
 }

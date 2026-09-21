@@ -1,148 +1,113 @@
 import java.util.Locale;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class App {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+    private static final String[] SIMBOL = {"PA", "T", "K", "P", "UTS", "UAS"};
+    private static final String[] NAMA = {"Partisipatif", "Tugas", "Kuis", "Proyek", "UTS", "UAS"};
+    private static final String PESAN_FORMAT =
+            "Data tidak valid. Silahkan menggunakan format: Simbol|Bobot|Perolehan-Nilai";
+    // Double.parseDouble juga menerima "NaN", "1e3", "5d", dan heks; hanya desimal biasa yang valid.
+    private static final Pattern ANGKA = Pattern.compile("[+-]?(\\d+\\.?\\d*|\\.\\d+)");
 
-        int bobotPA = scanner.nextInt();
-        int bobotT = scanner.nextInt();
-        int bobotK = scanner.nextInt();
-        int bobotP = scanner.nextInt();
-        int bobotUTS = scanner.nextInt();
-        int bobotUAS = scanner.nextInt();
-        
-        int totalBobot = bobotPA + bobotT + bobotK + bobotP + bobotUTS + bobotUAS;
+    // NaN bila teks bukan angka desimal biasa atau nilainya di luar jangkauan double.
+    private static double parseAngka(String teks) {
+        if (!ANGKA.matcher(teks).matches()) return Double.NaN;
+        double nilai = Double.parseDouble(teks);
+        return Double.isInfinite(nilai) ? Double.NaN : nilai;
+    }
 
-        if (totalBobot != 100) {
-            System.out.println("Total bobot harus 100");
-            return; 
+    private static int indeksSimbol(String simbol) {
+        for (int i = 0; i < SIMBOL.length; i++) {
+            if (SIMBOL[i].equals(simbol)) return i;
         }
+        return -1;
+    }
 
-        double totalPA = 0;
-        double totalT = 0;
-        double totalK = 0;
-        double totalP = 0;
-        double totalUTS = 0;
-        double totalUAS = 0;
-        double perolehanPA = 0;
-        double perolehanT = 0;
-        double perolehanK = 0;
-        double perolehanP = 0;
-        double perolehanUTS = 0;
-        double perolehanUAS = 0;
+    // null bila ada bobot yang bukan bilangan bulat atau jumlahnya kurang dari enam.
+    private static int[] bacaBobot(Scanner scanner) {
+        int[] bobot = new int[SIMBOL.length];
+        for (int i = 0; i < bobot.length; i++) {
+            if (!scanner.hasNextInt()) return null;
+            bobot[i] = scanner.nextInt();
+        }
+        return bobot;
+    }
 
-        scanner.nextLine();
-
+    private static void bacaPerolehan(Scanner scanner, double[] total, double[] perolehan) {
         while (scanner.hasNextLine()) {
-            String input = scanner.nextLine();
-            if (input.equals("---")) {
-                break;
-            }
-            String[] bagian = input.split("\\|");
+            String baris = scanner.nextLine();
+            if (baris.equals("---")) break;
+
+            String[] bagian = baris.split("\\|");
             if (bagian.length != 3) {
-                System.out.println("Data tidak valid. Silahkan menggunakan format: Simbol|Bobot|Perolehan-Nilai");
+                System.out.println(PESAN_FORMAT);
                 continue;
             }
-            String simbol = bagian[0].trim();
-            String bobotStr = bagian[1].trim();
-            String perolehanStr = bagian[2].trim();
-            double bobot;
-            double perolehan;
-            try {
-                bobot = Double.parseDouble(bobotStr);
-                perolehan = Double.parseDouble(perolehanStr);
-            } catch (NumberFormatException e) {
-                System.out.println("Data tidak valid. Silahkan menggunakan format: Simbol|Bobot|Perolehan-Nilai");
+            double bobot = parseAngka(bagian[1].trim());
+            double nilai = parseAngka(bagian[2].trim());
+            if (Double.isNaN(bobot) || Double.isNaN(nilai)) {
+                System.out.println(PESAN_FORMAT);
                 continue;
             }
-            if (!simbol.equals("PA") && !simbol.equals("T") && !simbol.equals("K")
-                    && !simbol.equals("P") && !simbol.equals("UTS") && !simbol.equals("UAS")) {
+            int indeks = indeksSimbol(bagian[0].trim());
+            if (indeks < 0) {
                 System.out.println("Simbol tidak dikenal");
                 continue;
             }
 
-            perolehan = Math.max(0, Math.min(perolehan, bobot));
-            switch (simbol) {
-                case "PA":
-                    totalPA += bobot;
-                    perolehanPA += perolehan;
-                    break;
-                case "T":
-                    totalT += bobot;
-                    perolehanT += perolehan;
-                    break;
-                case "K":
-                    totalK += bobot;
-                    perolehanK += perolehan;
-                    break;
-                case "P":
-                    totalP += bobot;
-                    perolehanP += perolehan;
-                    break;
-                case "UTS":
-                    totalUTS += bobot;
-                    perolehanUTS += perolehan;
-                    break;
-                case "UAS":
-                    totalUAS += bobot;
-                    perolehanUAS += perolehan;
-                    break;
-            }
+            total[indeks] += bobot;
+            perolehan[indeks] += Math.max(0, Math.min(nilai, bobot));
         }
-
-        int persentasePA = percentage(perolehanPA, totalPA);
-        int persentaseT = percentage(perolehanT, totalT);
-        int persentaseK = percentage(perolehanK, totalK);
-        int persentaseP = percentage(perolehanP, totalP);
-        int persentaseUTS = percentage(perolehanUTS, totalUTS);
-        int persentaseUAS = percentage(perolehanUAS, totalUAS);
-
-        double nilaiPA = persentasePA / 100.0 * bobotPA;
-        double nilaiT = persentaseT / 100.0 * bobotT;
-        double nilaiK = persentaseK / 100.0 * bobotK;
-        double nilaiP = persentaseP / 100.0 * bobotP;
-        double nilaiUTS = persentaseUTS / 100.0 * bobotUTS;
-        double nilaiUAS = persentaseUAS / 100.0 * bobotUAS;
-
-        double nilaiAkhir = nilaiPA + nilaiT + nilaiK + nilaiP + nilaiUTS + nilaiUAS;
-        nilaiAkhir = Math.round(nilaiAkhir * 100.0) / 100.0;
-
-        System.out.println("Perolehan Nilai:");
-        printComponent("Partisipatif", persentasePA, nilaiPA, bobotPA);
-        printComponent("Tugas", persentaseT, nilaiT, bobotT);
-        printComponent("Kuis", persentaseK, nilaiK, bobotK);
-        printComponent("Proyek", persentaseP, nilaiP, bobotP);
-        printComponent("UTS", persentaseUTS, nilaiUTS, bobotUTS);
-        printComponent("UAS", persentaseUAS, nilaiUAS, bobotUAS);
-        System.out.println();
-        System.out.printf(Locale.US, ">> Nilai Akhir: %.2f%n", nilaiAkhir);
-        System.out.println(">> Grade: " + grade(nilaiAkhir));
     }
 
-    private static int percentage(double perolehan, double total) {
+    private static int persentase(double perolehan, double total) {
         return total == 0 ? 0 : (int) (perolehan / total * 100 + 1e-9);
     }
 
-    private static void printComponent(String nama, int persentase, double perolehan, double total) {
-        System.out.printf(Locale.US, ">> %s: %d/100 (%.2f/%.0f)%n", nama, persentase, perolehan, total);
+    private static String grade(double nilaiAkhir) {
+        double n = nilaiAkhir + 1e-9; // toleransi galat floating point pada batas grade
+        if (n >= 79.5) return "A";
+        if (n >= 72) return "AB";
+        if (n >= 64.5) return "B";
+        if (n >= 57) return "BC";
+        if (n >= 49.5) return "C";
+        if (n >= 34) return "D";
+        return "E";
     }
 
-    private static String grade(double nilaiAkhir) {
-        double epsilon = 1e-9;
-        if (nilaiAkhir + epsilon >= 79.5) {
-            return "A";
-        } else if (nilaiAkhir + epsilon >= 72) {
-            return "AB";
-        } else if (nilaiAkhir + epsilon >= 64.5) {
-            return "B";
-        } else if (nilaiAkhir + epsilon >= 57) {
-            return "BC";
-        } else if (nilaiAkhir + epsilon >= 49.5) {
-            return "C";
-        } else if (nilaiAkhir + epsilon >= 34) {
-            return "D";
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        int[] bobot = bacaBobot(scanner);
+        if (bobot == null) {
+            System.out.println("Bobot tidak valid");
+            return;
         }
-        return "E";
+        int totalBobot = 0;
+        for (int b : bobot) totalBobot += b;
+        if (totalBobot != 100) {
+            System.out.println("Total bobot harus 100");
+            return;
+        }
+        if (scanner.hasNextLine()) scanner.nextLine(); // sisa baris setelah bobot terakhir
+
+        double[] total = new double[SIMBOL.length];
+        double[] perolehan = new double[SIMBOL.length];
+        bacaPerolehan(scanner, total, perolehan);
+
+        double nilaiAkhir = 0;
+        System.out.println("Perolehan Nilai:");
+        for (int i = 0; i < SIMBOL.length; i++) {
+            int persen = persentase(perolehan[i], total[i]);
+            double nilai = persen / 100.0 * bobot[i];
+            nilaiAkhir += nilai;
+            System.out.printf(Locale.US, ">> %s: %d/100 (%.2f/%d)%n", NAMA[i], persen, nilai, bobot[i]);
+        }
+        nilaiAkhir = Math.round(nilaiAkhir * 100.0) / 100.0;
+
+        System.out.println();
+        System.out.printf(Locale.US, ">> Nilai Akhir: %.2f%n", nilaiAkhir);
+        System.out.println(">> Grade: " + grade(nilaiAkhir));
     }
 }
