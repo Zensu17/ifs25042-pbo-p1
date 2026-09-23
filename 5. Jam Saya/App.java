@@ -24,14 +24,8 @@ public class App {
         }
     }
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        int jamAwal = scanner.hasNextLine() ? parseJam(scanner.nextLine().trim()) : -1;
-        if (jamAwal < 0) {
-            System.out.println("Jam tidak valid");
-            return;
-        }
-
+    // Menerapkan seluruh perintah pergeseran jam, mengembalikan {posisiAkhir, totalMenit, pergantianHari}.
+    private static long[] terapkanPerintah(Scanner scanner, int jamAwal) {
         long posisi = jamAwal;
         long totalMenit = 0;
         long pergantianHari = 0;
@@ -51,10 +45,32 @@ public class App {
             pergantianHari += Math.abs(Math.floorDiv(posisi, MENIT_PER_HARI));
             posisi = Math.floorMod(posisi, MENIT_PER_HARI);
         }
+        return new long[]{posisi, totalMenit, pergantianHari};
+    }
 
+    private static void cetakHasil(int jamAwal, long posisi, long totalMenit, long pergantianHari) {
         System.out.printf(Locale.US, "Jam Awal: %02d:%02d%n", jamAwal / 60, jamAwal % 60);
         System.out.printf(Locale.US, "Jam Akhir: %02d:%02d%n", posisi / 60, posisi % 60);
         System.out.println("Total Menit: " + (totalMenit > 0 ? "+" + totalMenit : String.valueOf(totalMenit)));
         System.out.println("Pergantian Hari: " + pergantianHari);
+    }
+
+    // Mengorkestrasi alur: validasi jam awal -> proses perintah -> cetak. Tidak melakukan I/O sendiri.
+    private static void proses(Scanner scanner, int jamAwal) {
+        if (jamAwal < 0) {
+            System.out.println("Jam tidak valid");
+            return;
+        }
+        long[] hasil = terapkanPerintah(scanner, jamAwal);
+        cetakHasil(jamAwal, hasil[0], hasil[1], hasil[2]);
+    }
+
+    public static void main(String[] args) {
+        try (Scanner scanner = new Scanner(System.in)) {
+            int jamAwal = scanner.hasNextLine() ? parseJam(scanner.nextLine().trim()) : -1;
+            proses(scanner, jamAwal);
+        } catch (RuntimeException e) {
+            System.out.println("Terjadi kesalahan saat memproses input");
+        }
     }
 }

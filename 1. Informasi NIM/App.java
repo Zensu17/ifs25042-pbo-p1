@@ -27,10 +27,15 @@ public class App {
         return !s.isEmpty();
     }
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        String nim = scanner.hasNextLine() ? scanner.nextLine() : "";
+    private static void cetakInformasi(String nim, String namaProdi, String angkatan, String urutan) {
+        System.out.println("Informasi NIM " + nim + ": ");
+        System.out.println(">> Program Studi: " + namaProdi);
+        System.out.println(">> Angkatan: " + Integer.parseInt("20" + angkatan));
+        System.out.println(">> Urutan: " + Integer.parseInt(urutan));
+    }
 
+    // Mengorkestrasi alur: validasi -> cetak. Tidak melakukan I/O sendiri.
+    private static void proses(String nim) {
         if (nim.length() != PANJANG_NIM) {
             System.out.println("NIM harus 8 karakter");
             return;
@@ -49,10 +54,14 @@ public class App {
             return;
         }
 
+        cetakInformasi(nim, namaProdi, angkatan, urutan);
+    }
 
-        System.out.println("Informasi NIM " + nim + ": ");
-        System.out.println(">> Program Studi: " + namaProdi);
-        System.out.println(">> Angkatan: " + Integer.parseInt("20" + angkatan));
-        System.out.println(">> Urutan: " + Integer.parseInt(urutan));
+    public static void main(String[] args) {
+        try (Scanner scanner = new Scanner(System.in)) {
+            proses(scanner.hasNextLine() ? scanner.nextLine() : "");
+        } catch (RuntimeException e) {
+            System.out.println("Terjadi kesalahan saat memproses input");
+        }
     }
 }

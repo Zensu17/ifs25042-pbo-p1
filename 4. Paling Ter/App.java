@@ -48,10 +48,20 @@ public class App {
                 + " = " + jumlahTerendah + "\n";
     }
 
-    public static void main(String[] args) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        TreeMap<Long, Integer> frekuensi = bacaFrekuensi(reader);
-        if (frekuensi.isEmpty()) return;
+    // Mengorkestrasi alur: validasi -> ringkas -> cetak.
+    private static void proses(TreeMap<Long, Integer> frekuensi) {
+        if (frekuensi.isEmpty()) {
+            System.out.println("Data tidak valid");
+            return;
+        }
         System.out.print(ringkasan(frekuensi));
+    }
+
+    public static void main(String[] args) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+            proses(bacaFrekuensi(reader));
+        } catch (IOException e) {
+            System.out.println("Gagal membaca input");
+        }
     }
 }

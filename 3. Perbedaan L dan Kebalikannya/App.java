@@ -7,7 +7,7 @@ public class App {
     private static long[][] bacaMatriks(Scanner scanner) {
         if (!scanner.hasNextInt()) return null;
         int n = scanner.nextInt();
-        if (n < 1) return null;
+        if (n < 1 || n > 10_000) return null; // batas atas mencegah alokasi memori berlebihan
 
         long[][] matriks = new long[n][n];
         for (int i = 0; i < n; i++) {
@@ -54,8 +54,8 @@ public class App {
         System.out.println("Dominan: " + dominan);
     }
 
-    public static void main(String[] args) {
-        long[][] matriks = bacaMatriks(new Scanner(System.in));
+    // Mengorkestrasi alur: baca -> validasi -> hitung -> cetak. Tidak melakukan I/O sendiri.
+    private static void proses(long[][] matriks) {
         if (matriks == null) {
             System.out.println("Input matriks tidak valid");
             return;
@@ -72,5 +72,13 @@ public class App {
         long perbedaan = Math.abs(l - kebalikanL);
         long dominan = perbedaan == 0 ? tengah : Math.max(l, kebalikanL);
         cetak(String.valueOf(l), String.valueOf(kebalikanL), tengah, String.valueOf(perbedaan), dominan);
+    }
+
+    public static void main(String[] args) {
+        try (Scanner scanner = new Scanner(System.in)) {
+            proses(bacaMatriks(scanner));
+        } catch (RuntimeException e) {
+            System.out.println("Terjadi kesalahan saat memproses input");
+        }
     }
 }

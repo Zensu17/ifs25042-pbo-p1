@@ -76,9 +76,27 @@ public class App {
         return "E";
     }
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+    // Mencetak rincian per komponen dan mengembalikan nilai akhir hasil akumulasi.
+    private static double cetakRincian(int[] bobot, double[] total, double[] perolehan) {
+        double nilaiAkhir = 0;
+        System.out.println("Perolehan Nilai:");
+        for (int i = 0; i < SIMBOL.length; i++) {
+            int persen = persentase(perolehan[i], total[i]);
+            double nilai = persen / 100.0 * bobot[i];
+            nilaiAkhir += nilai;
+            System.out.printf(Locale.US, ">> %s: %d/100 (%.2f/%d)%n", NAMA[i], persen, nilai, bobot[i]);
+        }
+        return Math.round(nilaiAkhir * 100.0) / 100.0;
+    }
 
+    private static void cetakRingkasan(double nilaiAkhir) {
+        System.out.println();
+        System.out.printf(Locale.US, ">> Nilai Akhir: %.2f%n", nilaiAkhir);
+        System.out.println(">> Grade: " + grade(nilaiAkhir));
+    }
+
+    // Mengorkestrasi alur: validasi bobot -> baca perolehan -> cetak. Tidak melakukan I/O sendiri.
+    private static void proses(Scanner scanner) {
         int[] bobot = bacaBobot(scanner);
         if (bobot == null) {
             System.out.println("Bobot tidak valid");
@@ -96,18 +114,15 @@ public class App {
         double[] perolehan = new double[SIMBOL.length];
         bacaPerolehan(scanner, total, perolehan);
 
-        double nilaiAkhir = 0;
-        System.out.println("Perolehan Nilai:");
-        for (int i = 0; i < SIMBOL.length; i++) {
-            int persen = persentase(perolehan[i], total[i]);
-            double nilai = persen / 100.0 * bobot[i];
-            nilaiAkhir += nilai;
-            System.out.printf(Locale.US, ">> %s: %d/100 (%.2f/%d)%n", NAMA[i], persen, nilai, bobot[i]);
-        }
-        nilaiAkhir = Math.round(nilaiAkhir * 100.0) / 100.0;
+        double nilaiAkhir = cetakRincian(bobot, total, perolehan);
+        cetakRingkasan(nilaiAkhir);
+    }
 
-        System.out.println();
-        System.out.printf(Locale.US, ">> Nilai Akhir: %.2f%n", nilaiAkhir);
-        System.out.println(">> Grade: " + grade(nilaiAkhir));
+    public static void main(String[] args) {
+        try (Scanner scanner = new Scanner(System.in)) {
+            proses(scanner);
+        } catch (RuntimeException e) {
+            System.out.println("Terjadi kesalahan saat memproses input");
+        }
     }
 }
